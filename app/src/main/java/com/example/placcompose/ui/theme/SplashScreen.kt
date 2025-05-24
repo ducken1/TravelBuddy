@@ -21,7 +21,7 @@ import kotlinx.coroutines.delay
 fun SplashScreen(navController: NavHostController) {
     LaunchedEffect(true) {
         delay(2000) // Wait for 2 seconds
-        navController.navigate("register") {
+        navController.navigate("home") {
             popUpTo("splash") { inclusive = true } // So you can't go back to splash
         }
     }

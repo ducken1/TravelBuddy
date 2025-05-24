@@ -3,6 +3,7 @@ package com.example.placcompose.ui.theme
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +34,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -67,6 +70,13 @@ fun NavigationDrawerM3(navController: NavHostController) {
 
     // val sectionNames = listOf("", "Oglasi", "Račun")
 
+    val openDrawer: () -> Unit = {
+        scope.launch {
+            drawerState.open()
+        }
+    }
+
+
     LaunchedEffect(authState) {
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             authState = firebaseAuth.currentUser != null
@@ -87,11 +97,11 @@ fun NavigationDrawerM3(navController: NavHostController) {
         listOf(
             listOf(
                 DrawerData(icon = R.drawable.home, label = "Domov", isSelected = true),
-                DrawerData(icon = R.drawable.inbox, label = "Sporočila")
+                DrawerData(icon = R.drawable.chat, label = "Sporočila")
             ),
             listOf(
-                DrawerData(icon = R.drawable.dodajoglas, label = "Dodaj Oglas"),
-                DrawerData(icon = R.drawable.mojioglasi, label = "Moji Oglasi")
+                DrawerData(icon = R.drawable.dodajoglas, label = "Dodaj"),
+                DrawerData(icon = R.drawable.mojioglasi, label = "Moje objave")
             ),
             listOf(
                 DrawerData(icon = R.drawable.logout, label = "Odjava")
@@ -101,7 +111,7 @@ fun NavigationDrawerM3(navController: NavHostController) {
         listOf(
             listOf(
                 DrawerData(icon = R.drawable.home, label = "Domov", isSelected = true),
-                DrawerData(icon = R.drawable.inbox, label = "Sporočila")
+                DrawerData(icon = R.drawable.chat, label = "Sporočila")
             ), listOf(
                 DrawerData(icon = R.drawable.login, label = "Prijava"),
                 DrawerData(icon = R.drawable.register, label = "Registracija")
@@ -117,54 +127,64 @@ fun NavigationDrawerM3(navController: NavHostController) {
     ModalNavigationDrawer(scrimColor = Color(90, 90, 90),
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(drawerContainerColor = Color.DarkGray) {
+            ModalDrawerSheet(drawerContainerColor = Color(0xFFFEF8E3)) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.sweepGradient(
-                                colors = listOf(Color(34, 120, 37), Color(11, 90, 7)),
-                                Offset(80f, 100f)
-                            )
-                        )
-
+                        .background(Color(0xFFFEF8E3))
+                        .padding(10.dp)
                 ) {
-
+                    // The profile section in the center
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.autist),
                             contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .size(120.dp)
                                 .clip(CircleShape)
-                                .padding(vertical = 10.dp)
                         )
                         Text(
                             text = userName ?: "Gospod Ježek",
                             style = MaterialTheme.typography.headlineLarge,
                             color = Color.Black,
                             fontSize = 28.sp,
-                            modifier = Modifier.padding(start = 5.dp)
+                            modifier = Modifier.padding(start = 5.dp, bottom = 5.dp)
                         )
                     }
+
+                    // Settings icon at top right
+                    Icon(
+                        painter = painterResource(id = R.drawable.settings),
+                        contentDescription = "Settings",
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp)
+                            .clickable {
+                                navController.navigate("settings")
+                            }
+                    )
                 }
+
 
 
                 sections.forEachIndexed { sectionIndex, sectionItems ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(2.dp)
+                            .height(0.5.dp)
                             .background(Color.Black)
                     )
 
                     sectionItems.forEachIndexed { itemIndex, item ->
 
                         NavigationDrawerItem(modifier = Modifier.padding(
-                            vertical = 4.dp, horizontal = 3.dp
+                            vertical = 0.dp, horizontal = 0.dp
                         ),
                             label = { Text(text = item.label) },
                             selected = selectedItem == item,
@@ -188,8 +208,8 @@ fun NavigationDrawerM3(navController: NavHostController) {
                                         ).show()
                                     }
 
-                                    "Dodaj Oglas" -> navController.navigate("dodajoglas")
-                                    "Moji Oglasi" -> navController.navigate("mojioglasi")
+                                    "Dodaj" -> navController.navigate("dodajoglas")
+                                    "Moje objave" -> navController.navigate("mojioglasi")
                                 }
 
                             },
@@ -201,18 +221,19 @@ fun NavigationDrawerM3(navController: NavHostController) {
                             },
                             colors = NavigationDrawerItemDefaults.colors(
                                 selectedTextColor = Color.White,
-                                unselectedTextColor = Color(0, 210, 0),
-                                unselectedContainerColor = Color.DarkGray,
-                                selectedContainerColor = Color(0, 120, 0, 148),
+                                unselectedTextColor = Color(0xFFBA6565),
+                                unselectedContainerColor = Color(0xFFFEF8E3),
+                                selectedContainerColor = Color(0xFFBA6565),
                                 selectedIconColor = Color.White,
-                                unselectedIconColor = Color(0, 210, 0)
-                            )
+                                unselectedIconColor = Color(0xFFBA6565)
+                            ),
+                            shape = RectangleShape
                         )
 
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(0.7f.dp)
+                                .height(0.7.dp)
                                 .background(Color.Black)
                         )
                     }
@@ -221,7 +242,7 @@ fun NavigationDrawerM3(navController: NavHostController) {
         },
         content = {
 
-            NavGraph(navController)
+            NavGraph(navController, openDrawer)
         })
 
 }

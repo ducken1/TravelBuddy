@@ -12,12 +12,13 @@ import com.example.placcompose.HomeScreen
 import com.example.placcompose.LoginScreen
 import com.example.placcompose.MojiOglasi
 import com.example.placcompose.RegisterScreen
+import com.example.placcompose.SettingsScreen
 import com.example.placcompose.UrediOglas
 import com.example.placcompose.ui.theme.SplashScreen
 import java.net.URLDecoder
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(navController: NavHostController, openDrawer: () -> Unit) {
 
 
     NavHost(navController = navController, startDestination = "splash") {
@@ -28,16 +29,19 @@ fun NavGraph(navController: NavHostController) {
             HomeScreen(navController)
         }
         composable("login") {
-            LoginScreen(navController)
+            LoginScreen(navController, openDrawer)
         }
         composable("register") {
-            RegisterScreen(navController)
+            RegisterScreen(navController, openDrawer)
         }
         composable("dodajoglas") {
             DodajOglas(navController)
         }
         composable("mojioglasi") {
             MojiOglasi(navController)
+        }
+        composable("settings") {
+            SettingsScreen(navController, openDrawer)
         }
         composable("UrediOglas?image={image}&name={name}&oglasid={oglasid}",
             listOf(
