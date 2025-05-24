@@ -83,6 +83,14 @@ fun SettingsScreen(navController: NavHostController, openDrawer: () -> Unit) {
                         openDrawer()
                     }
             )
+            Spacer(modifier = Modifier.weight(1f))
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding()
+            )
         }
 
         Image(
