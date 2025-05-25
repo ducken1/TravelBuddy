@@ -15,18 +15,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.placcompose.dataclasses.OglasData
+import com.example.placcompose.dataclasses.UsersData
 import com.example.placcompose.ui.theme.BiggerCard
-import com.example.placcompose.ui.theme.OglasiSeznam
-import com.example.placcompose.viewmodel.OglasiViewModel
+import com.example.placcompose.ui.theme.UsersSeznam
+import com.example.placcompose.viewmodel.UsersViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MojiOglasi(navController: NavHostController) {
 
-    val oglasiViewModel: OglasiViewModel = viewModel()
-    val oglasiData: List<OglasData> by oglasiViewModel.MyData
+    val usersViewModel: UsersViewModel = viewModel()
+    val usersData: List<UsersData> by usersViewModel.MyData
 
-    var selectedItem by remember { mutableStateOf<OglasData?>(null) }
+    var selectedItem by remember { mutableStateOf<UsersData?>(null) }
 
     var isBiggerCardVisible by remember { mutableStateOf(false) }
 
@@ -36,8 +37,8 @@ fun MojiOglasi(navController: NavHostController) {
             .background(Color.White)
             .clickable { isBiggerCardVisible = false }
     ) {
-        OglasiSeznam(
-            oglasiData = oglasiData,
+        UsersSeznam(
+            usersData = usersData,
             onItemClick = {
                 selectedItem = it
 
@@ -49,7 +50,7 @@ fun MojiOglasi(navController: NavHostController) {
 
 
         
-    if (isBiggerCardVisible) BiggerCard(oglasData = selectedItem!!)
+    if (isBiggerCardVisible) BiggerCard(userData = selectedItem!!)
     
 }
 

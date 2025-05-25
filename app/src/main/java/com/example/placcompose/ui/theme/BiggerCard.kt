@@ -29,9 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import com.example.placcompose.dataclasses.OglasData
+import com.example.placcompose.dataclasses.UsersData
 
 @Composable
-fun BiggerCard(oglasData: OglasData) {
+fun BiggerCard(userData: UsersData) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -58,7 +59,7 @@ fun BiggerCard(oglasData: OglasData) {
                     verticalArrangement = Arrangement.SpaceAround,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    oglasData.firstImage?.let { imageUrl ->
+                    userData.profilepicture?.let { imageUrl ->
                         val painter: Painter = rememberImagePainter(data = imageUrl)
                         Image(
                             painter = painter,
@@ -68,7 +69,7 @@ fun BiggerCard(oglasData: OglasData) {
                                 .clip(RoundedCornerShape(15.dp))
                         )
                     }
-                    oglasData.name?.let {
+                    userData.name?.let {
                         Text(
                             text = it,
                             fontSize = 28.sp,

@@ -1,13 +1,23 @@
 package com.example.placcompose
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -17,129 +27,122 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.placcompose.dataclasses.OglasData
+import com.example.placcompose.dataclasses.UsersData
 import com.example.placcompose.ui.theme.BiggerCard
-import com.example.placcompose.ui.theme.OglasiSeznam
-import com.example.placcompose.viewmodel.OglasiViewModel
+import com.example.placcompose.ui.theme.UsersSeznam
+import com.example.placcompose.viewmodel.UsersViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
 
-    val languages = listOf(
-        "Java",
-        "Kotlin",
-        "Python",
-        "Dart",
-        "PHP",
-        "XML",
-        "HTML",
-        "JavaScript",
-        "R",
-        "Go",
-        "C++",
-        "Swift",
-        "Verilog"
-    )
 
-    var selectedItem by remember { mutableStateOf<OglasData?>(null) }
-    val oglasiViewModel: OglasiViewModel = viewModel()
 
-//    val oglasiData: List<OglasData> by oglasiViewModel.AllData
+    var selectedItem by remember { mutableStateOf<UsersData?>(null) }
+    val usersViewModel: UsersViewModel = viewModel()
 
     var isBiggerCardVisible by remember { mutableStateOf(false) }
 
     var searchQuery by remember { mutableStateOf("") }
 
-    val searchData: List<OglasData> by oglasiViewModel.MyData2
+    val searchData: List<UsersData> by usersViewModel.MyData2
 
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFFEF8E3))
             .clickable { isBiggerCardVisible = false }
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFEF8E3))
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-            TextField(
-                value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                    oglasiViewModel.setSearchQuery(it)
-                },
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 5.dp, start = 6.dp, end = 6.dp),
-                placeholder = { Text(text = "Search...") },
-                singleLine = true,
-                textStyle = TextStyle.Default.copy(fontSize = 16.sp),
-                colors = TextFieldDefaults.textFieldColors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color.Black
-                ),
-                shape = RoundedCornerShape(32.dp)
-            )
-//            MyApp2(
-//                modifier = Modifier,
-//                languages
-//            )
+                    .padding(top = 16.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.menu),
+                    contentDescription = "Menu",
+                    tint = Color(0xFFBA6565),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable {
+                            openDrawer()
+                        }
+                )
 
-            OglasiSeznam(
-                oglasiData = searchData,
-                onItemClick = { selectedOglasData ->
-                    selectedItem = selectedOglasData
+                // Zaobljen TextField v istem slogu kot login
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = {
+                        searchQuery = it
+                        usersViewModel.setSearchQuery(it)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    placeholder = { Text(text = "Išči po ključnih besedah...") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(16.dp),
+                    textStyle = TextStyle.Default.copy(fontSize = 16.sp),
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.search), // če obstaja
+                            contentDescription = "Search Icon"
+                        )
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        containerColor = Color.White,
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.Black,
+                        cursorColor = Color.Black,
+                        textColor = Color.Black
+                    )
+                )
+            }
 
+
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Seznam uporabnikov
+            UsersSeznam(
+                usersData = searchData,
+                onItemClick = { selectedUserData ->
+                    selectedItem = selectedUserData
                     isBiggerCardVisible = !isBiggerCardVisible
                 },
                 navController
             )
         }
     }
+
+// Kartica z večjim prikazom (če je aktivna)
     if (isBiggerCardVisible) {
-        BiggerCard(oglasData = selectedItem!!)
+        BiggerCard(userData = selectedItem!!)
     }
 }
 
-//@Composable
-//fun MyApp2(modifier: Modifier = Modifier, languages: List<String>) {
-//    LazyRow() {
-//        items(items = languages) { item ->
-//            RowItem(modifier = modifier, name = item)
-//        }
-//    }
-//}
 
-//@Composable
-//fun RowItem(modifier: Modifier, name: String) {
-//    Card(
-//        modifier
-//            .padding(10.dp)
-//            .fillMaxWidth()
-//            .height(80.dp)
-//            .aspectRatio(1.5f),
-//        colors = CardDefaults.cardColors(
-//            containerColor = Color.White
-//        ),
-//        elevation = CardDefaults.cardElevation(10.dp)
-//    ) {
-//        Box(
-//            modifier
-//                .padding(10.dp)
-//                .fillMaxSize(),
-//            contentAlignment = Alignment.Center
-//        )
-//        {
-//            Text(text = name, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-//        }
-//    }
-//}
+
 
 

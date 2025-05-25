@@ -26,7 +26,7 @@ fun NavGraph(navController: NavHostController, openDrawer: () -> Unit) {
             SplashScreen(navController)
         }
         composable("home") {
-            HomeScreen(navController)
+            HomeScreen(navController, openDrawer)
         }
         composable("login") {
             LoginScreen(navController, openDrawer)
