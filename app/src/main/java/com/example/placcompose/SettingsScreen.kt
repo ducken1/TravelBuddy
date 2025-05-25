@@ -1,10 +1,12 @@
 package com.example.placcompose
 
+import AgeDropdown
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,10 +17,12 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,10 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.placcompose.dataclasses.OglasData
@@ -49,6 +55,12 @@ fun SettingsScreen(navController: NavHostController, openDrawer: () -> Unit) {
     var text by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    var name by remember { mutableStateOf("") }
+    var age by remember { mutableStateOf("") }
+    var bio by remember { mutableStateOf("") }
+
+
     var isButtonEnabled by remember { mutableStateOf(true) }
 
     val pickImage =
@@ -57,6 +69,48 @@ fun SettingsScreen(navController: NavHostController, openDrawer: () -> Unit) {
                 imageUri = uri
             }
         }
+
+    LaunchedEffect(Unit) {
+        val firebaseAuth = FirebaseAuth.getInstance()
+        val userId = firebaseAuth.currentUser?.uid
+        val databaseRef = FirebaseDatabase.getInstance().reference
+
+        if (userId != null) {
+            // Load existing profile picture URL
+            databaseRef.child("Users").child(userId).child("profilepicture").get()
+                .addOnSuccessListener { snapshot ->
+                    val url = snapshot.getValue(String::class.java)
+                    if (!url.isNullOrBlank()) {
+                        imageUrl = url
+                    }
+                }
+            // Load existing name
+            databaseRef.child("Users").child(userId).child("name").get()
+                .addOnSuccessListener { snapshot ->
+                    val savedName = snapshot.getValue(String::class.java)
+                    if (!savedName.isNullOrBlank()) {
+                        name = savedName
+                    }
+                }
+
+            databaseRef.child("Users").child(userId).child("age").get()
+                .addOnSuccessListener { snapshot ->
+                    val savedAge = snapshot.getValue(String::class.java)
+                    if (!savedAge.isNullOrBlank()) {
+                        age = savedAge
+                    }
+                }
+
+            databaseRef.child("Users").child(userId).child("bio").get()
+                .addOnSuccessListener { snapshot ->
+                    val savedBio = snapshot.getValue(String::class.java)
+                    if (!savedBio.isNullOrBlank()) {
+                        bio = savedBio
+                    }
+                }
+
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -84,7 +138,8 @@ fun SettingsScreen(navController: NavHostController, openDrawer: () -> Unit) {
                     }
             )
             Spacer(modifier = Modifier.weight(1f))
-            androidx.compose.foundation.Image(
+
+            Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
                 modifier = Modifier
@@ -93,83 +148,156 @@ fun SettingsScreen(navController: NavHostController, openDrawer: () -> Unit) {
             )
         }
 
-        Image(
-            painter = rememberImagePainter(data = if (imageUri != null) imageUri else R.drawable.autist),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .clickable { pickImage.launch("image/*") }
-        )
-
-        OutlinedTextField(
-            value = text,
-            onValueChange = { text = it },
-            label = { Text(text = "Enter your text") },
+        // Row with image on left and name input on right
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 30.dp, start = 10.dp, end = 10.dp)
+                .padding(top = 5.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val painter = rememberImagePainter(
+                data = imageUri ?: imageUrl ?: R.drawable.autist
+            )
+
+            Image(
+                painter = painter,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .clickable { pickImage.launch("image/*") }
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier
+                    .padding(start = 5.dp)
+            ) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(text = "Ime") },
+                    modifier = Modifier
+                        .widthIn(min = 50.dp, max = 145.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AgeDropdown(age = age, onAgeSelected = { age = it })
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = bio,
+            onValueChange = { bio = it },
+            label = { Text("Opis") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+            singleLine = false,
+            maxLines = 5
         )
 
-        Button(
+
+        OutlinedButton(
             onClick = {
                 if (isButtonEnabled) {
                     isButtonEnabled = false
-                    dodajOglas(
-                        text = text,
+                    saveUserProfile(
+                        name = name,
+                        age = age,
                         imageUri = imageUri,
                         navController = navController,
                         context = context,
-                        isButtonEnabled = mutableStateOf(isButtonEnabled)
+                        isButtonEnabled = mutableStateOf(isButtonEnabled),
+                        bio = bio
                     )
                 }
             },
             modifier = Modifier
-                .wrapContentWidth()
-                .height(50.dp)
-                .padding(top = 10.dp),
-
-            enabled = isButtonEnabled
+                .width(200.dp)
+                .padding(top = 24.dp),
+            shape = RectangleShape,
+            border = BorderStroke(1.dp, Color.Black),
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFFBA6565))
         ) {
-            Icon(imageVector = Icons.Default.Send, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Dodaj oglas")
+            Text(text = "Shrani", fontSize = 20.sp)
         }
     }
 }
 
-private fun dodajOglas(
-    text: String,
+private fun saveUserProfile(
+    name: String,
+    age: String,
     imageUri: Uri?,
     navController: NavHostController,
     context: Context,
-    isButtonEnabled: MutableState<Boolean>
+    isButtonEnabled: MutableState<Boolean>,
+    bio: String
 ) {
-    if (text.isNotEmpty() && imageUri != null) {
-        val firebaseAuth = FirebaseAuth.getInstance()
-        val userId = firebaseAuth.currentUser?.uid
-        val firebaseDatabase = FirebaseDatabase.getInstance()
-        val databaseReference = firebaseDatabase.reference.child("Oglasi")
-        val storageRef = FirebaseStorage.getInstance().reference.child("Images")
+    val firebaseAuth = FirebaseAuth.getInstance()
+    val userId = firebaseAuth.currentUser?.uid
+    val databaseRef = FirebaseDatabase.getInstance().reference.child("Users")
 
-        val oglasId = databaseReference.push().key
-        if (oglasId != null) {
-            storageRef.child(oglasId).putFile(imageUri!!).addOnSuccessListener { task ->
+    if (userId == null) {
+        Toast.makeText(context, "Uporabnik ni prijavljen", Toast.LENGTH_SHORT).show()
+        isButtonEnabled.value = true
+        return
+    }
+
+    // Save name
+    databaseRef.child(userId).child("name").setValue(name)
+        .addOnSuccessListener {
+            Toast.makeText(context, "Ime uspešno shranjeno", Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener {
+            Toast.makeText(context, "Napaka pri shranjevanju imena", Toast.LENGTH_SHORT).show()
+        }
+
+    databaseRef.child(userId).child("age").setValue(age)
+        .addOnSuccessListener {
+            Toast.makeText(context, "Starost uspešno shranjena", Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener {
+            Toast.makeText(context, "Napaka pri shranjevanju starosti", Toast.LENGTH_SHORT).show()
+        }
+
+    databaseRef.child(userId).child("bio").setValue(bio)
+        .addOnSuccessListener {
+            Toast.makeText(context, "Bio uspešno shranjen", Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener {
+            Toast.makeText(context, "Napaka pri shranjevanju bio", Toast.LENGTH_SHORT).show()
+        }
+
+
+
+    // If image selected, upload and save url
+    if (imageUri != null) {
+        val storageRef = FirebaseStorage.getInstance().reference.child("Images")
+        val imageId = databaseRef.push().key ?: userId
+
+        storageRef.child(imageId).putFile(imageUri)
+            .addOnSuccessListener { task ->
                 task.metadata!!.reference!!.downloadUrl.addOnSuccessListener { url ->
                     val imageUrl = url.toString()
-                    val oglasData = OglasData(oglasId, userId, text, imageUrl)
-
-                    databaseReference.child(oglasId).setValue(oglasData)
-
-                    Toast.makeText(context, "Oglas uspešno dodan", Toast.LENGTH_SHORT).show()
-
-                    navController.navigate("home")
+                    databaseRef.child(userId).child("profilepicture").setValue(imageUrl)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Profilna slika uspešno posodobljena", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Napaka pri shranjevanju slike", Toast.LENGTH_SHORT).show()
+                        }
                 }
             }
-        }
-    } else {
-        Toast.makeText(context, "Prosim vnesite text in izberite sliko", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener {
+                Toast.makeText(context, "Napaka pri nalaganju slike", Toast.LENGTH_SHORT).show()
+            }
     }
+
     isButtonEnabled.value = true
 }

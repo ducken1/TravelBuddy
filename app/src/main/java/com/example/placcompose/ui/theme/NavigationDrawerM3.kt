@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.example.placcompose.R
 import com.example.placcompose.navigation.NavGraph
 import com.example.placcompose.dataclasses.DrawerData
@@ -58,6 +60,9 @@ fun NavigationDrawerM3(navController: NavHostController) {
     val auth = FirebaseAuth.getInstance()
 
     val currentUser = FirebaseAuth.getInstance().currentUser
+
+    var profilePictureUrl by remember { mutableStateOf<String?>(null) }
+
 
     var authState by remember { mutableStateOf(currentUser != null) }
     var userName by remember { mutableStateOf<String?>(null) }
@@ -83,11 +88,15 @@ fun NavigationDrawerM3(navController: NavHostController) {
         }
         auth.addAuthStateListener(authStateListener)
 
-        if (authState) {
+        if (authState && currentUser != null) {
             getUsername() { fetchedUserName ->
                 userName = fetchedUserName
             }
-        } else {
+            getProfilePictureUrl(currentUser.uid) { url ->
+                profilePictureUrl = url
+            }
+        }
+         else {
             userName = null
         }
 
@@ -139,9 +148,16 @@ fun NavigationDrawerM3(navController: NavHostController) {
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.autist),
-                            contentDescription = null,
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 5.dp, horizontal = 5.dp),
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                        AsyncImage(
+                            model = profilePictureUrl ?: R.drawable.autist,
+                            contentDescription = "Profilna slika",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .size(120.dp)
@@ -152,9 +168,10 @@ fun NavigationDrawerM3(navController: NavHostController) {
                             style = MaterialTheme.typography.headlineLarge,
                             color = Color.Black,
                             fontSize = 28.sp,
-                            modifier = Modifier.padding(start = 5.dp, bottom = 5.dp)
+                            modifier = Modifier.padding(start = 10.dp, bottom = 5.dp)
                         )
                     }
+                        }
 
                     // Settings icon at top right
                     Icon(
@@ -166,8 +183,12 @@ fun NavigationDrawerM3(navController: NavHostController) {
                             .align(Alignment.TopEnd)
                             .padding(4.dp)
                             .clickable {
-                                navController.navigate("settings")
+                                scope.launch {
+                                    drawerState.close() // 👈 Close the drawer
+                                    navController.navigate("settings")
+                                }
                             }
+
                     )
                 }
 
@@ -256,7 +277,7 @@ fun getUsername(callback: (String?) -> Unit) {
         userReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    val userName = dataSnapshot.child("mail").getValue(String::class.java)
+                    val userName = dataSnapshot.child("name").getValue(String::class.java)
                     callback(userName)
                 } else {
                     callback(null)
@@ -271,5 +292,25 @@ fun getUsername(callback: (String?) -> Unit) {
         callback(null)
     }
 }
+
+fun getProfilePictureUrl(userId: String?, onResult: (String?) -> Unit) {
+    if (userId == null) {
+        onResult(null)
+        return
+    }
+
+    val userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId)
+    userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val profileUrl = snapshot.child("profilepicture").getValue(String::class.java)
+            onResult(profileUrl)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            onResult(null)
+        }
+    })
+}
+
 
 
