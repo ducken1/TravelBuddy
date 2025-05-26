@@ -79,7 +79,7 @@ fun LoginScreen(navController: NavHostController, openDrawer: () -> Unit) {
                 contentDescription = "Menu",
                 tint = Color(0xFFBA6565),
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(40.dp)
                     .clickable {
                         openDrawer()
                     }

@@ -74,7 +74,7 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp, bottom = 8.dp),
+                    .padding(top = 16.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
@@ -82,7 +82,7 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
                     contentDescription = "Menu",
                     tint = Color(0xFFBA6565),
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(40.dp)
                         .clickable {
                             openDrawer()
                         }
