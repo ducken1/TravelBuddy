@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.placcompose.dataclasses.OglasData
 import com.example.placcompose.dataclasses.UsersData
 import com.example.placcompose.ui.theme.BiggerCard
 import com.example.placcompose.ui.theme.UsersSeznam
@@ -45,8 +44,6 @@ import com.example.placcompose.viewmodel.UsersViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
-
-
 
     var selectedItem by remember { mutableStateOf<UsersData?>(null) }
     val usersViewModel: UsersViewModel = viewModel()

@@ -28,7 +28,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
-import com.example.placcompose.dataclasses.OglasData
 import com.example.placcompose.dataclasses.UsersData
 
 @Composable

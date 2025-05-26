@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
-import com.example.placcompose.dataclasses.OglasData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -295,6 +294,7 @@ fun SettingsScreen(navController: NavHostController, openDrawer: () -> Unit) {
                             tint = Color(0xFFBA6565),
                             modifier = Modifier
                                 .size(24.dp)
+                                .padding(bottom = 2.dp)
                                 .clickable {
                                     DatePickerDialog(
                                         context,

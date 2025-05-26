@@ -109,10 +109,6 @@ fun NavigationDrawerM3(navController: NavHostController) {
                 DrawerData(icon = R.drawable.chat, label = "Sporočila")
             ),
             listOf(
-                DrawerData(icon = R.drawable.dodajoglas, label = "Dodaj"),
-                DrawerData(icon = R.drawable.mojioglasi, label = "Moje objave")
-            ),
-            listOf(
                 DrawerData(icon = R.drawable.logout, label = "Odjava")
             )
         )
@@ -228,9 +224,6 @@ fun NavigationDrawerM3(navController: NavHostController) {
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
-
-                                    "Dodaj" -> navController.navigate("dodajoglas")
-                                    "Moje objave" -> navController.navigate("mojioglasi")
                                 }
 
                             },

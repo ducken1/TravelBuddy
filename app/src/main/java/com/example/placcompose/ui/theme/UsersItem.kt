@@ -45,7 +45,6 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberImagePainter
-import com.example.placcompose.dataclasses.OglasData
 import com.example.placcompose.R
 import com.example.placcompose.dataclasses.UsersData
 import com.example.placcompose.viewmodel.UsersViewModel

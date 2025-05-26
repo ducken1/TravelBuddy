@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.placcompose.dataclasses.OglasData
 import com.example.placcompose.dataclasses.UsersData
 import com.example.placcompose.ui.theme.BiggerCard
 import com.example.placcompose.ui.theme.UsersSeznam
