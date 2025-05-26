@@ -66,7 +66,7 @@ fun UsersItem(userData: UsersData, onClick: () -> Unit, navController: NavHostCo
 
     Box(
         modifier = Modifier
-            .padding(5.dp)
+            .padding(vertical = 5.dp)
             .border(
                 width = 0.6.dp,
                 color = Color(0xFFBA6565),
@@ -75,7 +75,7 @@ fun UsersItem(userData: UsersData, onClick: () -> Unit, navController: NavHostCo
     ) {
     Card(
         modifier = Modifier
-            .width(375.dp)
+            .fillMaxWidth()
             .wrapContentHeight()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),

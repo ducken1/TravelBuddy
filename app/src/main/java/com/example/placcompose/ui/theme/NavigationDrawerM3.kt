@@ -160,7 +160,7 @@ fun NavigationDrawerM3(navController: NavHostController) {
                                 .clip(CircleShape)
                         )
                         Text(
-                            text = userName ?: "Gospod Ježek",
+                            text = userName ?: "Mr. X",
                             style = MaterialTheme.typography.headlineLarge,
                             color = Color.Black,
                             fontSize = 28.sp,

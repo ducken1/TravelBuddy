@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -73,8 +74,8 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(top = 12.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.Top
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.menu),
@@ -96,8 +97,10 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp),
-                    placeholder = { Text(text = "Išči po ključnih besedah...") },
+                        .height(45.dp)
+                        .padding(start = 16.dp)
+                        .offset(y = (-5).dp),
+                    placeholder = { Text(text = "Išči po ključnih besedah...", fontSize = 12.sp) },
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     textStyle = TextStyle.Default.copy(fontSize = 16.sp),
@@ -117,9 +120,6 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
                 )
             }
 
-
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             // Seznam uporabnikov
             UsersSeznam(

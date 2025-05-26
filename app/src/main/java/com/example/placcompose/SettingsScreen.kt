@@ -310,7 +310,7 @@ fun SettingsScreen(navController: NavHostController, openDrawer: () -> Unit) {
                     }
 
                     // Po želji dodaš prikaz izbranih datumov:
-                    Text("Od: ${startDate.value}  Do: ${endDate.value}", fontSize = 12.sp)
+                    Text("Od: ${startDate.value}  Do: ${endDate.value}", fontSize = 12.sp, color = Color(0xFFBA6565))
                 }
             }
         }
