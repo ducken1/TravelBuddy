@@ -38,35 +38,94 @@ import android.net.Uri
 import androidx.compose.foundation.background
 
 
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+
+import android.widget.Toast
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+
 @Composable
 fun ChatListView(navController: NavHostController, viewModel: ChatListViewModel = viewModel()) {
     val chatList by viewModel.chatList.collectAsState()
+    val context = LocalContext.current
+
+    // Stanje za prikaz potrditvenega dialoga in katero klepet izbrisati
+    val showDeleteDialog = remember { mutableStateOf(false) }
+    val chatToDelete = remember { mutableStateOf<ChatSummary?>(null) }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize()
-            .background(Color(0xFFFEF8E3)) // nastavi ozadje
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFEF8E3))
     ) {
-        items(chatList) { chat ->
+        items(chatList, key = { it.chatId }) { chat ->
             ChatListItem(
                 chatSummary = chat,
-                // V ChatListView, znotraj items()
                 onClick = {
                     val encodedUserName = Uri.encode(chat.userName)
                     val encodedProfilePicUrl = Uri.encode(chat.profilePictureUrl)
                     navController.navigate("chat/${chat.otherUserId}/$encodedUserName/$encodedProfilePicUrl")
+                },
+                onDelete = {
+                    // Prikaži potrditveno okno
+                    chatToDelete.value = chat
+                    showDeleteDialog.value = true
                 }
             )
             Divider()
         }
     }
+
+    // AlertDialog za potrditev izbrisa
+    if (showDeleteDialog.value && chatToDelete.value != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog.value = false },
+            title = { Text("Izbriši klepet") },
+            text = { Text("Ali ste prepričani, da želite izbrisati klepet z uporabnikom \"${chatToDelete.value?.userName}\"?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    chatToDelete.value?.let {
+                        viewModel.deleteChat(it.chatId)
+                        Toast.makeText(context, "Klepet izbrisan", Toast.LENGTH_SHORT).show()
+                    }
+                    showDeleteDialog.value = false
+                    chatToDelete.value = null
+                }) {
+                    Text("Da")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDeleteDialog.value = false
+                    chatToDelete.value = null
+                }) {
+                    Text("Ne")
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun ChatListItem(chatSummary: ChatSummary, onClick: () -> Unit) {
+fun ChatListItem(
+    chatSummary: ChatSummary,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onClick() },
+                    onDoubleTap = { onDelete() }
+                )
+            }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

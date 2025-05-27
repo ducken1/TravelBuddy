@@ -25,6 +25,16 @@ class ChatListViewModel : ViewModel() {
         loadUserChats()
     }
 
+    fun deleteChat(chatId: String) {
+        databaseRef.child(chatId).removeValue()
+            .addOnSuccessListener {
+                // Uspešno izbrisano
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatListViewModel", "Napaka pri brisanju klepeta: $chatId", e)
+            }
+    }
+
     private fun loadUserChats() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
