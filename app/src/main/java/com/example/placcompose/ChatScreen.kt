@@ -91,7 +91,6 @@ fun ChatScreen(
 
         // Prikaz sporočil
         LazyColumn(
-            reverseLayout = true,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()

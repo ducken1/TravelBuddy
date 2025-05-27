@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.placcompose.ChatListView
 import com.example.placcompose.ChatScreen
 import com.example.placcompose.HomeScreen
 import com.example.placcompose.LoginScreen
@@ -48,7 +49,7 @@ fun NavGraph(navController: NavHostController, openDrawer: () -> Unit) {
             val userName = backStackEntry.arguments?.getString("receiverName") ?: ""
             val encodedPic = backStackEntry.arguments?.getString("receiverPic") ?: ""
 
-            val decodedPic = Uri.decode(encodedPic) // ✅ samo enkrat dekodiraj
+            val decodedPic = Uri.decode(encodedPic).replace("/Images/", "/Images%2F") // ✅ samo enkrat dekodiraj
 
             ChatScreen(
                 navController = navController,
@@ -56,6 +57,11 @@ fun NavGraph(navController: NavHostController, openDrawer: () -> Unit) {
                 userName = Uri.decode(userName), // za vsak slučaj tudi ime
                 profilePicUrl = decodedPic
             )
+        }
+
+        // Nova pot za ChatListView
+        composable("chat_list") {
+            ChatListView(navController)
         }
     }
 }

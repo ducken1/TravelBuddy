@@ -170,22 +170,23 @@ fun NavigationDrawerM3(navController: NavHostController) {
                         }
 
                     // Settings icon at top right
-                    Icon(
-                        painter = painterResource(id = R.drawable.settings),
-                        contentDescription = "Settings",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .align(Alignment.TopEnd)
-                            .padding(4.dp)
-                            .clickable {
-                                scope.launch {
-                                    drawerState.close() // 👈 Close the drawer
-                                    navController.navigate("settings")
+                    if (authState) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.settings),
+                            contentDescription = "Settings",
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                                .clickable {
+                                    scope.launch {
+                                        drawerState.close() // 👈 Close the drawer
+                                        navController.navigate("settings")
+                                    }
                                 }
-                            }
-
-                    )
+                        )
+                    }
                 }
 
 
@@ -213,9 +214,11 @@ fun NavigationDrawerM3(navController: NavHostController) {
 
                                 when (item.label) {
                                     "Domov" -> navController.navigate("home")
+                                    "Sporočila" -> navController.navigate("chat_list")  // tukaj nov vnos
                                     "Prijava" -> navController.navigate("login")
                                     "Registracija" -> navController.navigate("register")
                                     "Odjava" -> {
+                                        profilePictureUrl = null
                                         auth.signOut()
                                         navController.navigate("home")
                                         Toast.makeText(
