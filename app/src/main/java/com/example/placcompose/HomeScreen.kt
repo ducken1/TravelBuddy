@@ -1,5 +1,6 @@
 package com.example.placcompose
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +42,8 @@ import com.example.placcompose.dataclasses.UsersData
 import com.example.placcompose.ui.theme.BiggerCard
 import com.example.placcompose.ui.theme.UsersSeznam
 import com.example.placcompose.viewmodel.UsersViewModel
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,15 +123,17 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
                 )
             }
 
-
-            // Seznam uporabnikov
+            //CHAT
             UsersSeznam(
                 usersData = searchData,
                 onItemClick = { selectedUserData ->
-                    selectedItem = selectedUserData
-                    isBiggerCardVisible = !isBiggerCardVisible
+                    val encodedId = Uri.encode(selectedUserData.id)
+                    val encodedName = Uri.encode(selectedUserData.name)
+                    val encodedPic = Uri.encode(selectedUserData.profilepicture) // ✅ samo enkrat kodiraj
+
+                    navController.navigate("chat/$encodedId/$encodedName/$encodedPic")
                 },
-                navController
+                navController = navController
             )
         }
     }
