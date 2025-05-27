@@ -37,13 +37,13 @@ fun NavGraph(navController: NavHostController, openDrawer: () -> Unit) {
         composable("settings") {
             SettingsScreen(navController, openDrawer)
         }
-        composable(
-            route = "chat/{receiverId}/{receiverName}/{receiverPic}",
-            arguments = listOf(
+        composable("chat/{receiverId}/{receiverName}/{receiverPic}",
+            listOf(
                 navArgument("receiverId") { type = NavType.StringType },
                 navArgument("receiverName") { type = NavType.StringType },
                 navArgument("receiverPic") { type = NavType.StringType }
             )
+
         ) { backStackEntry ->
             val receiverId = backStackEntry.arguments?.getString("receiverId") ?: ""
             val userName = backStackEntry.arguments?.getString("receiverName") ?: ""
@@ -55,13 +55,15 @@ fun NavGraph(navController: NavHostController, openDrawer: () -> Unit) {
                 navController = navController,
                 receiverId = receiverId,
                 userName = Uri.decode(userName), // za vsak slučaj tudi ime
-                profilePicUrl = decodedPic
+                profilePicUrl = decodedPic,
+
+                openDrawer
             )
         }
 
         // Nova pot za ChatListView
         composable("chat_list") {
-            ChatListView(navController)
+            ChatListView(navController, openDrawer)
         }
     }
 }

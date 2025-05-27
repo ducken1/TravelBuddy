@@ -2,8 +2,8 @@ package com.example.placcompose
 
 import ChatViewModel
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -24,9 +23,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import coil.compose.rememberImagePainter
 import com.example.placcompose.dataclasses.ChatMessage
 import com.google.firebase.auth.FirebaseAuth
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+fun formatTimestamp(timestamp: Long): String {
+    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return sdf.format(Date(timestamp))
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +40,9 @@ fun ChatScreen(
     navController: NavHostController,
     receiverId: String,
     userName: String,
-    profilePicUrl: String
+    profilePicUrl: String,
+
+    openDrawer: () -> Unit
 ) {
     val chatViewModel: ChatViewModel = viewModel()
     val messages by chatViewModel.messages.collectAsState()
@@ -56,38 +64,62 @@ fun ChatScreen(
                 )
     }
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFEF8E3))
-            .padding(16.dp)
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Glava z avatarjem in imenom
         Row(
-            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(top = 16.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = if (isValidImageUrl) profilePicUrl else null,
-                placeholder = painterResource(id = R.drawable.autist),
-                error = painterResource(id = R.drawable.autist),
-                fallback = painterResource(id = R.drawable.autist),
-                contentDescription = "Profilna slika",
-                contentScale = ContentScale.Crop,
+            Icon(
+                painter = painterResource(id = R.drawable.menu),
+                contentDescription = "Menu",
+                tint = Color(0xFFBA6565),
                 modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
+                    .size(40.dp)
+                    .clickable { openDrawer() }
             )
-            Spacer(modifier = Modifier.width(16.dp))
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+
             Text(
                 text = userName,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            AsyncImage(
+                model = if (isValidImageUrl) profilePicUrl else null,
+                placeholder = painterResource(id = R.drawable.avatar),
+                error = painterResource(id = R.drawable.avatar),
+                fallback = painterResource(id = R.drawable.avatar),
+                contentDescription = "Profilna slika",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+            )
+
         }
+
+        Divider(
+            color = Color(0xFFBA6565),
+            thickness = 1.dp,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
 
         // Prikaz sporočil
         LazyColumn(
@@ -96,7 +128,7 @@ fun ChatScreen(
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
         ) {
-            items(messages.reversed()) { message ->
+            items(messages.asReversed()) { message ->
                 ChatBubble(
                     message = message,
                     isCurrentUser = message.senderId == currentUserId
@@ -106,29 +138,40 @@ fun ChatScreen(
         }
 
         // Vnos in pošiljanje sporočil
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = message,
-                onValueChange = { message = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Vnesi sporočilo...") }
-            )
-            IconButton(
-                onClick = {
-                    if (message.isNotBlank()) {
-                        chatViewModel.sendMessage(message, receiverId)
-                        message = ""
+        OutlinedTextField(
+            value = message,
+            onValueChange = { message = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            placeholder = { Text("Vnesi sporočilo...") },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        if (message.isNotBlank()) {
+                            chatViewModel.sendMessage(message, receiverId)
+                            message = ""
+                        }
                     }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.send),
+                        contentDescription = "Pošlji",
+                        tint = Color(0xFFBA6565)
+                    )
                 }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.send),
-                    contentDescription = "Pošlji"
-                )
-            }
-        }
+            },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFFBA6565),
+                unfocusedBorderColor = Color(0xFFBA6565),
+                cursorColor = Color(0xFFBA6565),
+                focusedTrailingIconColor = Color(0xFFBA6565),
+                unfocusedTrailingIconColor = Color(0xFFBA6565)
+            ),
+            shape = RoundedCornerShape(20.dp),
+            maxLines = 4
+        )
+
     }
 }
 
@@ -137,22 +180,44 @@ fun ChatScreen(
 fun ChatBubble(message: ChatMessage, isCurrentUser: Boolean) {
     val bubbleColor = if (isCurrentUser) Color(0xFFDCF8C6) else Color.White
     val alignment = if (isCurrentUser) Arrangement.End else Arrangement.Start
-    val shape = if (isCurrentUser) RoundedCornerShape(16.dp, 0.dp, 16.dp, 16.dp)
-    else RoundedCornerShape(0.dp, 16.dp, 16.dp, 16.dp)
+    val shape = if (isCurrentUser)
+        RoundedCornerShape(16.dp, 0.dp, 16.dp, 16.dp)
+    else
+        RoundedCornerShape(0.dp, 16.dp, 16.dp, 16.dp)
+
+    val timeText = remember(message.timestamp) {
+        formatTimestamp(message.timestamp)
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = alignment
     ) {
-        Box(
-            modifier = Modifier
-                .background(color = bubbleColor, shape = shape)
-                .padding(12.dp)
+        Column(
+            horizontalAlignment = if (isCurrentUser) Alignment.End else Alignment.Start
         ) {
+            Column(
+                modifier = Modifier
+                    .background(color = bubbleColor, shape = shape)
+                    .padding(12.dp)
+                    .widthIn(max = 280.dp)
+            ) {
+                Text(
+                    text = message.text,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Timestamp displayed under the bubble
             Text(
-                text = message.text,
-                style = MaterialTheme.typography.bodyLarge
+                text = timeText,
+                fontSize = 12.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
     }
 }
+

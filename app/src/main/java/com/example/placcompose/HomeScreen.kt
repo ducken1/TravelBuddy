@@ -1,6 +1,7 @@
 package com.example.placcompose
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -41,13 +44,20 @@ import androidx.navigation.NavHostController
 import com.example.placcompose.dataclasses.UsersData
 import com.example.placcompose.ui.theme.BiggerCard
 import com.example.placcompose.ui.theme.UsersSeznam
+import com.example.placcompose.ui.theme.getProfilePictureUrl
+import com.example.placcompose.ui.theme.getUsername
 import com.example.placcompose.viewmodel.UsersViewModel
+import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
 import java.net.URLEncoder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
+
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    var authState by remember { mutableStateOf(currentUser != null) }
 
     var selectedItem by remember { mutableStateOf<UsersData?>(null) }
     val usersViewModel: UsersViewModel = viewModel()
@@ -57,6 +67,15 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
     var searchQuery by remember { mutableStateOf("") }
 
     val searchData: List<UsersData> by usersViewModel.MyData2
+
+    val context = LocalContext.current
+
+    LaunchedEffect(authState) {
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            authState = firebaseAuth.currentUser != null
+        }
+        auth.addAuthStateListener(authStateListener)
+    }
 
     Surface(
         modifier = Modifier
@@ -96,11 +115,11 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
                     value = searchQuery,
                     onValueChange = {
                         searchQuery = it
-                        usersViewModel.setSearchQuery(it)
+                        usersViewModel.setSearchQuery(it.lowercase())
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(45.dp)
+                        .height(50.dp)
                         .padding(start = 16.dp)
                         .offset(y = (-5).dp),
                     placeholder = { Text(text = "Išči po ključnih besedah...", fontSize = 12.sp) },
@@ -111,14 +130,15 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
                         Icon(
                             painter = painterResource(id = R.drawable.search), // če obstaja
                             contentDescription = "Search Icon"
+
                         )
                     },
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        containerColor = Color.White,
-                        focusedBorderColor = Color.Black,
-                        unfocusedBorderColor = Color.Black,
-                        cursorColor = Color.Black,
-                        textColor = Color.Black
+                        focusedBorderColor = Color(0xFFBA6565),
+                        unfocusedBorderColor = Color(0xFFBA6565),
+                        cursorColor = Color(0xFFBA6565),
+                        focusedTrailingIconColor = Color(0xFFBA6565),
+                        unfocusedTrailingIconColor = Color(0xFFBA6565)
                     )
                 )
             }
@@ -127,11 +147,18 @@ fun HomeScreen(navController: NavHostController, openDrawer: () -> Unit)  {
             UsersSeznam(
                 usersData = searchData,
                 onItemClick = { selectedUserData ->
-                    val encodedId = Uri.encode(selectedUserData.id)
-                    val encodedName = Uri.encode(selectedUserData.name)
-                    val encodedPic = Uri.encode(selectedUserData.profilepicture) // ✅ samo enkrat kodiraj
 
-                    navController.navigate("chat/$encodedId/$encodedName/$encodedPic")
+                    if (authState) {
+                        val encodedId = Uri.encode(selectedUserData.id)
+                        val encodedName = Uri.encode(selectedUserData.name)
+                        val encodedPic =
+                            Uri.encode(selectedUserData.profilepicture) // ✅ samo enkrat kodiraj
+
+                        navController.navigate("chat/$encodedId/$encodedName/$encodedPic")
+                    }
+                    else {
+                        Toast.makeText(context, "Za klepet je potrebna prijava", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 navController = navController
             )

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import com.example.placcompose.dataclasses.UsersData
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun UsersSeznam(
@@ -19,16 +20,21 @@ fun UsersSeznam(
     onItemClick: (UsersData) -> Unit,
     navController: NavHostController
 ) {
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        usersData.forEach { user ->
-            UsersItem(
-                userData = user,
-                onClick = { onItemClick(user) },
-                navController = navController
-            )
-        }
+        usersData
+            .filter { it.id != currentUserId } // Exclude current user
+            .forEach { user ->
+                UsersItem(
+                    userData = user,
+                    onClick = { onItemClick(user) },
+                    navController = navController
+                )
+            }
     }
 }
+
